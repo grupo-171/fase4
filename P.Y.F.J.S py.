@@ -1,0 +1,148 @@
+from abc import ABC, abstractmethod
+import logging
+from datetime import datetime
+
+# ---------------- LOGS ----------------
+logging.basicConfig(
+    filename="logs.txt",
+    level=logging.ERROR,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
+# ---------------- EXCEPCIONES ----------------
+class ErrorSistema(Exception):
+    pass
+
+class ClienteInvalido(ErrorSistema):
+    pass
+
+class ServicioInvalido(ErrorSistema):
+    pass
+
+class ReservaError(ErrorSistema):
+    pass
+
+# ---------------- CLASE ABSTRACTA ----------------
+class Entidad(ABC):
+    def __init__(self, id):
+        self.id = id
+
+# ---------------- CLIENTE ----------------
+class Cliente(Entidad):
+    def __init__(self, id, nombre, email):
+        super().__init__(id)
+        self.nombre = nombre
+        self.email = email
+        self.validar()
+
+    def validar(self):
+        if not self.nombre or not isinstance(self.nombre, str):
+            raise ClienteInvalido("Nombre inválido")
+        if "@" not in self.email:
+            raise ClienteInvalido("Email inválido")
+
+# ---------------- SERVICIO ABSTRACTO ----------------
+class Servicio(ABC):
+    def __init__(self, nombre, precio_base):
+        self.nombre = nombre
+        self.precio_base = precio_base
+
+    @abstractmethod
+    def calcular_costo(self, horas):
+        pass
+
+    @abstractmethod
+    def descripcion(self):
+        pass
+
+# ---------------- SERVICIOS ----------------
+class Sala(Servicio):
+    def calcular_costo(self, horas):
+        return self.precio_base * horas
+
+    def descripcion(self):
+        return "Reserva de sala"
+
+class Equipo(Servicio):
+    def calcular_costo(self, horas):
+        return self.precio_base * horas * 1.2
+
+    def descripcion(self):
+        return "Alquiler de equipos"
+
+class Asesoria(Servicio):
+    def calcular_costo(self, horas):
+        return self.precio_base * horas * 1.5
+
+    def descripcion(self):
+        return "Asesoría especializada"
+
+# ---------------- RESERVA ----------------
+class Reserva:
+    def __init__(self, cliente, servicio, horas):
+        self.cliente = cliente
+        self.servicio = servicio
+        self.horas = horas
+        self.estado = "Pendiente"
+
+    def confirmar(self):
+        try:
+            if self.horas <= 0:
+                raise ReservaError("Horas inválidas")
+            self.estado = "Confirmada"
+            print(f"Reserva confirmada para {self.cliente.nombre}")
+        except Exception as e:
+            logging.error(str(e))
+            print("Error al confirmar reserva")
+
+    def cancelar(self):
+        self.estado = "Cancelada"
+        print("Reserva cancelada")
+
+    def costo_total(self):
+        try:
+            return self.servicio.calcular_costo(self.horas)
+        except Exception as e:
+            logging.error(str(e))
+            raise ReservaError("Error en cálculo")
+
+# ---------------- SIMULACIÓN ----------------
+def simulacion():
+    clientes = []
+    servicios = []
+    reservas = []
+
+    try:
+        # Clientes
+        clientes.append(Cliente(1, "Juan", "juan@mail.com"))
+        clientes.append(Cliente(2, "Ana", "ana@mail.com"))
+        clientes.append(Cliente(3, "", "malcorreo"))  # ERROR
+    except Exception as e:
+        logging.error(str(e))
+        print("Error creando cliente")
+
+    # Servicios
+    servicios.append(Sala("Sala VIP", 50))
+    servicios.append(Equipo("Proyector", 30))
+    servicios.append(Asesoria("Consultoría", 100))
+
+    # Reservas
+    try:
+        r1 = Reserva(clientes[0], servicios[0], 2)
+        r1.confirmar()
+        print("Costo:", r1.costo_total())
+        reservas.append(r1)
+
+        r2 = Reserva(clientes[1], servicios[1], -1)  # ERROR
+        r2.confirmar()
+        reservas.append(r2)
+
+    except Exception as e:
+        logging.error(str(e))
+        print("Error en reserva")
+
+    print("Sistema sigue funcionando correctamente")
+
+# ---------------- MAIN ----------------
+if __name__ == "__main__":
+    simulacion()
