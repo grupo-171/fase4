@@ -108,41 +108,51 @@ class Reserva:
 
 # ---------------- SIMULACIÓN ----------------
 def simulacion():
-    clientes = []
-    servicios = []
-    reservas = []
+    sistema = SistemaFJ()
 
     try:
-        # Clientes
-        clientes.append(Cliente(1, "Juan", "juan@mail.com"))
-        clientes.append(Cliente(2, "Ana", "ana@mail.com"))
-        clientes.append(Cliente(3, "", "malcorreo"))  # ERROR
+        # Clientes válidos
+        c1 = Cliente(1, "Eliana", "Eliana@mail.com")
+        c2 = Cliente(2, "Miguel", "Miguel@mail.com")
+
+        # Cliente inválido
+        try:
+            c3 = Cliente(3, "", "correo_invalido")
+        except ClienteError as e:
+            logging.error(e)
+
+        sistema.agregar_cliente(c1)
+        sistema.agregar_cliente(c2)
+
+        # Servicios
+        s1 = ReservaSala("Sala VIP", 50)
+        s2 = AlquilerEquipo("Laptop", 30)
+        s3 = Asesoria("Consultoría", 100)
+
+        sistema.agregar_servicio(s1)
+        sistema.agregar_servicio(s2)
+        sistema.agregar_servicio(s3)
+
+        # Reservas correctas
+        print(sistema.crear_reserva(c1, s1, 2))
+        print(sistema.crear_reserva(c2, s2, 3))
+
+        # Reserva con error
+        try:
+            print(sistema.crear_reserva(c1, s1, -1))
+        except:
+            pass
+
+        # Más operaciones
+        for i in range(5):
+            try:
+                print(sistema.crear_reserva(c1, s3, i))
+            except:
+                pass
+
     except Exception as e:
-        logging.error(str(e))
-        print("Error creando cliente")
+        logging.critical("Error crítico del sistema", exc_info=True)
 
-    # Servicios
-    servicios.append(Sala("Sala VIP", 50))
-    servicios.append(Equipo("Proyector", 30))
-    servicios.append(Asesoria("Consultoría", 100))
-
-    # Reservas
-    try:
-        r1 = Reserva(clientes[0], servicios[0], 2)
-        r1.confirmar()
-        print("Costo:", r1.costo_total())
-        reservas.append(r1)
-
-        r2 = Reserva(clientes[1], servicios[1], -1)  # ERROR
-        r2.confirmar()
-        reservas.append(r2)
-
-    except Exception as e:
-        logging.error(str(e))
-        print("Error en reserva")
-
-    print("Sistema sigue funcionando correctamente")
-
-# ---------------- MAIN ----------------
+# ---------------- EJECUCIÓN ----------------
 if __name__ == "__main__":
     simulacion()
