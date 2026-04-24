@@ -78,7 +78,7 @@ class Asesoria(Servicio):
         return "Asesoría especializada"
 
 # ---------------- RESERVA ----------------
-class Reserva:
+class sistemaFJ:
     def __init__(self, cliente, servicio, horas):
         self.cliente = cliente
         self.servicio = servicio
@@ -108,7 +108,7 @@ class Reserva:
 
 # ---------------- SIMULACIÓN ----------------
 def simulacion():
-    sistema = SistemaFJ()
+    falta crear clase de sistemaFJ 
 
     try:
         # Clientes válidos
@@ -118,15 +118,15 @@ def simulacion():
         # Cliente inválido
         try:
             c3 = Cliente(3, "", "correo_invalido")
-        except ClienteError as e:
+        except Cliente as einvalido as e:
             logging.error(e)
 
         sistema.agregar_cliente(c1)
         sistema.agregar_cliente(c2)
 
         # Servicios
-        s1 = ReservaSala("Sala VIP", 50)
-        s2 = AlquilerEquipo("Laptop", 30)
+        s1 = Sala("Sala VIP", 50)
+        s2 = Equipo("Laptop", 30)
         s3 = Asesoria("Consultoría", 100)
 
         sistema.agregar_servicio(s1)
@@ -140,8 +140,8 @@ def simulacion():
         # Reserva con error
         try:
             print(sistema.crear_reserva(c1, s1, -1))
-        except:
-            pass
+        except exception as e: 
+            pass 
 
         # Más operaciones
         for i in range(5):
