@@ -98,3 +98,94 @@ class ServicioTour(Servicio):
 
     def descripcion(self):
         return "Servicio turístico"
+    # =========================
+# RESERVA
+# =========================
+class Reserva:
+    def __init__(self, cliente, servicio, duracion):
+        try:
+            if not isinstance(cliente, Cliente):
+                raise ReservaError("Cliente inválido")
+            if not isinstance(servicio, Servicio):
+                raise ReservaError("Servicio inválido")
+            if duracion <= 0:
+                raise ReservaError("Duración inválida")
+ 
+            self.cliente = cliente
+            self.servicio = servicio
+            self.duracion = duracion
+            self.estado = "pendiente"
+ 
+        except Exception as e:
+            logging.error(e)
+            raise
+ 
+    def confirmar(self):
+        try:
+            if self.estado != "pendiente":
+                raise ReservaError("Reserva ya procesada")
+            self.estado = "confirmada"
+            print("Reserva confirmada")
+ 
+        except Exception as e:
+            logging.error(e)
+            print("Error al confirmar:", e)
+ 
+    def cancelar(self):
+        try:
+            if self.estado == "cancelada":
+                raise ReservaError("Ya está cancelada")
+            self.estado = "cancelada"
+            print("Reserva cancelada")
+ 
+        except Exception as e:
+            logging.error(e)
+            print("Error al cancelar:", e)
+ 
+    def procesar_pago(self):
+        try:
+            costo = self.servicio.calcular_costo(self.duracion)
+        except TypeError:
+            try:
+                costo = self.servicio.calcular_costo()
+            except Exception as e:
+                logging.error(e)
+                raise ReservaError("Error en cálculo") from e
+        else:
+            print(f"Costo calculado: {costo}")
+        finally:
+            print("Proceso de pago finalizado")
+ 
+ 
+# =========================
+# SIMULACIÓN (10 OPERACIONES)
+# =========================
+clientes = []
+servicios = []
+reservas = []
+ 
+def ejecutar_sistema():
+    operaciones = [
+        lambda: clientes.append(Cliente("Ana", 25, "ana@mail.com")),
+        lambda: clientes.append(Cliente("", 20, "mal")),  # ERROR
+        lambda: servicios.append(ServicioHotel("Hotel", 100)),
+        lambda: servicios.append(ServicioTransporte("Bus", 5)),
+        lambda: servicios.append(ServicioTour("Tour", 50)),
+        lambda: reservas.append(Reserva(clientes[0], servicios[0], 3)),
+        lambda: reservas.append(Reserva("fake", servicios[0], 2)),  # ERROR
+        lambda: reservas[0].confirmar(),
+        lambda: reservas[0].procesar_pago(),
+        lambda: reservas[0].cancelar()
+    ]
+ 
+    for i, op in enumerate(operaciones):
+        try:
+            print(f"\nOperación {i+1}")
+            op()
+        except Exception as e:
+            print("Error controlado:", e)
+ 
+ 
+# EJECUCIÓN
+if __name__ == "__main__":
+    ejecutar_sistema()
