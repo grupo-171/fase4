@@ -1,78 +1,100 @@
-# hola mundo 
-# esta es una prueba que estamos conectados al repositorio para empezar a trabajar 
+from abc import ABC, abstractmethod
+import logging
 
-"""_summary_
-crearemos la clase 
+# CONFIGURACIÓN DE LOGS
+logging.basicConfig(
+    filename="sistema.log",
+    level=logging.ERROR,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
-"""
-class Finanzas:
-    """
-    Clase para gestionar ingresos, gastos y saldo del sistema.
-    """
- 
-    def __init__(self):
-        self.ingresos = []
-        self.gastos = []
- 
-    def agregar_ingreso(self, descripcion, valor):
-        if valor <= 0:
-            print("El ingreso debe ser mayor que cero.")
-            return
- 
-        ingreso = {
-            "descripcion": descripcion,
-            "valor": valor
-        }
- 
-        self.ingresos.append(ingreso)
-        print("Ingreso agregado correctamente.")
- 
-    def agregar_gasto(self, descripcion, valor):
-        if valor <= 0:
-            print("El gasto debe ser mayor que cero.")
-            return
- 
-        gasto = {
-            "descripcion": descripcion,
-            "valor": valor
-        }
- 
-        self.gastos.append(gasto)
-        print("Gasto agregado correctamente.")
- 
-    def calcular_total_ingresos(self):
-        total = 0
-        for ingreso in self.ingresos:
-            total += ingreso["valor"]
-        return total
- 
-    def calcular_total_gastos(self):
-        total = 0
-        for gasto in self.gastos:
-            total += gasto["valor"]
-        return total
- 
-    def calcular_saldo(self):
-        return self.calcular_total_ingresos() - self.calcular_total_gastos()
- 
-    def mostrar_reporte(self):
-        print("====== REPORTE FINANCIERO ======")
- 
-        print("\nIngresos:")
-        if len(self.ingresos) == 0:
-            print("No hay ingresos registrados.")
-        else:
-            for ingreso in self.ingresos:
-                print(f"- {ingreso['descripcion']}: ${ingreso['valor']}")
- 
-        print("\nGastos:")
-        if len(self.gastos) == 0:
-            print("No hay gastos registrados.")
-        else:
-            for gasto in self.gastos:
-                print(f"- {gasto['descripcion']}: ${gasto['valor']}")
- 
-        print("\nResumen:")
-        print(f"Total ingresos: ${self.calcular_total_ingresos()}")
-        print(f"Total gastos: ${self.calcular_total_gastos()}")
-        print(f"Saldo actual: ${self.calcular_saldo()}")
+# =========================
+# EXCEPCIONES PERSONALIZADAS
+# =========================
+class SistemaError(Exception):
+    pass
+
+class ValidacionError(SistemaError):
+    pass
+
+class ReservaError(SistemaError):
+    pass
+
+
+# =========================
+# CLASE ABSTRACTA BASE
+# =========================
+class Entidad(ABC):
+    @abstractmethod
+    def mostrar_info(self):
+        pass
+
+
+# =========================
+# CLIENTE
+# =========================
+class Cliente(Entidad):
+    def __init__(self, nombre, edad, email):
+        try:
+            if not nombre or not isinstance(nombre, str):
+                raise ValidacionError("Nombre inválido")
+            if edad < 18:
+                raise ValidacionError("El cliente debe ser mayor de edad")
+            if "@" not in email:
+                raise ValidacionError("Email inválido")
+
+            self.__nombre = nombre
+            self.__edad = edad
+            self.__email = email
+
+        except Exception as e:
+            logging.error(e)
+            raise
+
+    def mostrar_info(self):
+        return f"Cliente: {self.__nombre}, Edad: {self.__edad}, Email: {self.__email}"
+
+
+# =========================
+# SERVICIO ABSTRACTO
+# =========================
+class Servicio(ABC):
+    def __init__(self, nombre, precio_base):
+        self.nombre = nombre
+        self.precio_base = precio_base
+
+    @abstractmethod
+    def calcular_costo(self, *args):
+        pass
+
+    @abstractmethod
+    def descripcion(self):
+        pass
+
+
+# =========================
+# SERVICIOS DERIVADOS
+# =========================
+class ServicioHotel(Servicio):
+    def calcular_costo(self, dias=1, impuesto=0):
+        return (self.precio_base * dias) * (1 + impuesto)
+
+    def descripcion(self):
+        return "Servicio de hospedaje"
+
+
+class ServicioTransporte(Servicio):
+    def calcular_costo(self, distancia=1):
+        return self.precio_base * distancia
+
+    def descripcion(self):
+        return "Servicio de transporte"
+
+
+class ServicioTour(Servicio):
+    def calcular_costo(self, personas=1, descuento=0):
+        total = self.precio_base * personas
+        return total - (total * descuento)
+
+    def descripcion(self):
+        return "Servicio turístico"
